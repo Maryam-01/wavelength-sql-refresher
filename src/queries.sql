@@ -1,0 +1,4 @@
+-- queries.sql
+-- Write your SQL queries here.
+-- Run against the wavelength database with:
+--   psql -d wavelength -f src/queries.sql

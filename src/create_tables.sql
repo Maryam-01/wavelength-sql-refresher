@@ -1,0 +1,4 @@
+-- create_tables.sql
+-- Write your CREATE TABLE AS statements here.
+-- Run against the wavelength database with:
+--   psql -d wavelength -f src/create_tables.sql
