@@ -131,10 +131,3 @@ INSERT INTO listening_events (event_id, user_id, track_id, listened_at, completi
   (16, 1, 6,  '2024-11-09 23:10:00+00', 100, 'mobile'),
   (17, 2, 10, '2024-11-10 07:30:00+00', 42,  'mobile'),
   (18, 5, 9,  '2024-11-10 12:00:00+00', 100, 'desktop');
-
--- Reset sequences so future inserts use correct IDs
-SELECT setval('artists_artist_id_seq',        (SELECT MAX(artist_id) FROM artists));
-SELECT setval('tracks_track_id_seq',          (SELECT MAX(track_id)  FROM tracks));
-SELECT setval('users_user_id_seq',            (SELECT MAX(user_id)   FROM users));
-SELECT setval('playlists_playlist_id_seq',    (SELECT MAX(playlist_id) FROM playlists));
-SELECT setval('listening_events_event_id_seq',(SELECT MAX(event_id)  FROM listening_events));
