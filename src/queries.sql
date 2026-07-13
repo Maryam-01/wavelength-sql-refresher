@@ -27,7 +27,6 @@ WHERE tracks.play_count > (SELECT AVG(tracks.play_count) FROM tracks);
 
 SELECT tracks.title,
 artists.name
-
 FROM tracks 
 JOIN artists ON artists.artist_id = tracks.artist_id
 LEFT JOIN listening_events ON listening_events.track_id = tracks.track_id
@@ -62,6 +61,66 @@ SELECT tracks.title,
 JOIN tracks ON top_5_tracks.track_id = tracks.track_id
 JOIN artists ON artists.artist_id = tracks.artist_id;
     
+    
+
+WITH  average_plays AS (
+    SELECT AVG(play_count) AS average_play_count
+    FROM tracks
+)
+SELECT
+  tracks.title,
+  artists.name AS artist_name,
+  tracks.play_count
+FROM tracks
+JOIN artists ON tracks.artist_id = artists.artist_id
+WHERE tracks.play_count > (SELECT average_play_count FROM average_plays)
+ORDER BY tracks.play_count DESC;
+
+-- DISTINCT USER COUNT PER TRACK --
+WITH unique_listeners AS (
+    SELECT listening_events.track_id,
+            COUNT(DISTINCT listening_events.user_id) AS unique_users
+    FROM listening_events
+    GROUP BY listening_events.track_id
+)
+SELECT tracks.title, 
+        artists.name,
+        unique_listeners.unique_users
+FROM unique_listeners
+JOIN tracks ON unique_listeners.track_id = tracks.track_id
+JOIN artists ON artists.artist_id = tracks.artist_id
+ORDER BY unique_users DESC LIMIT 5;
+
+
+SELECT tracks.title,
+        artists.name,
+        tracks.play_count,
+        RANK() OVER (ORDER BY play_count ASC) AS least_popular
+FROM tracks
+JOIN artists ON artists.artist_id = tracks.artist_id;
+
+SELECT artists.genre,
+        tracks.title,
+        tracks.play_count,
+        RANK() OVER (PARTITION BY artists.genre ORDER BY tracks.play_count) AS ranked_tracks
+FROM tracks
+JOIN artists ON artists.artist_id = tracks.artist_id;
+
+SELECT listening_events.user_id,
+        listening_events.listened_at,
+        tracks.title,
+        ROW_NUMBER() OVER (PARTITION BY listening_events.user_id ORDER BY listening_events.listened_at ASC) AS rows_number
+FROM listening_events
+JOIN tracks ON tracks.track_id = listening_events.track_id;
+
+
+
+SELECT listening_events.listened_at,
+        COUNT(*) OVER (ORDER BY listening_events.listened_at ASC) AS running_total
+FROM listening_events 
+ORDER BY listening_events.listened_at;
+
+
     
 
 
