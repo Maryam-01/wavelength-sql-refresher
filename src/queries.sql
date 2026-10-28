@@ -4,6 +4,69 @@
 --   psql -d wavelength -f src/queries.sql
 
 
+
+SELECT artists.genre,
+SUM(tracks.play_count) AS total_play
+FROM artists
+JOIN tracks ON artists.artist_id = tracks.artist_id
+GROUP BY artists.genre
+ORDER BY total_play DESC;
+
+
+SELECT users.username,
+COUNT(listening_events.event_id) AS event_count
+FROM users
+JOIN listening_events
+    ON listening_events.user_id = users.user_id
+GROUP BY username
+ORDER BY event_count DESC;
+
+
+SELECT tracks.title,
+artists.name,
+tracks.play_count
+FROM tracks
+JOIN artists ON tracks.artist_id = artists.artist_id
+WHERE tracks.play_count > (
+        SELECT AVG(play_count)
+        FROM tracks
+);
+
+
+SELECT tracks.title,
+artists.name
+FROM tracks
+JOIN artists ON tracks.track_id = artists.artist_id
+WHERE NOT EXISTS (
+        SELECT listening_events.track_id
+        FROM listening_events
+        WHERE listening_events.track_id = tracks.track_id
+)
+
+
+
+SELECT users.username,
+listening_total
+FROM (
+        SELECT listening_events.user_id,
+        SUM(tracks.duration_secs) AS total_listening_secs
+        FROM listening_events
+        JOIN tracks
+           ON listening_events.track_id = tracks.track_id
+        GROUP BY listening_events.user_id
+) AS listening_totals
+JOIN users
+   ON users.user_id = listening_totals.user_id
+WHERE listening_totals.total_listening_secs > 1500;
+
+
+
+
+
+
+
+
+
 SELECT artists.genre,
 SUM(tracks.play_count) AS total_play
 FROM artists
