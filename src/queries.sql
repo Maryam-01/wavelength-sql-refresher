@@ -146,6 +146,32 @@ ORDER BY unique_listeners.unique_listener_count DESC,
 tracks.track_id LIMIT 5;
 
 
+WITH genre_summary AS (
+        SELECT artists.genre AS genre_name,
+        COUNT(DISTINCT tracks.track_id) AS track_count
+        SUM(tracks.play_count) AS total_play_count
+        FROM artists
+        JOIN tracks
+        ON artists.artist_id = tracks.track_id
+        GROUP BY genre_name
+),
+ average_play_count AS (
+        genre_name,
+        1.0 * total_play_count / NULLIF(track_count, 0)
+        AS average_play_count_per_track
+        FROM genre_summary
+ )
+
+
+SELECT genre_summary.genre_name,
+genre_summary.track_count,
+genre_summary.total_play_count,
+average_play_count.average_play_count_per_track
+FROM genre_summary
+JOIN average_play_count 
+ON genre_summary.genre_name = average_play_count.genre_name;
+
+
 
 
 
