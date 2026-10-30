@@ -59,6 +59,10 @@ JOIN users
    ON users.user_id = listening_totals.user_id
 WHERE listening_totals.total_listening_secs > 1500;
 
+FROM (
+        SELECT listening_events.track_id
+)
+
 
 
 
@@ -107,6 +111,41 @@ FROM (
 ) popular_tracks
 JOIN users ON popular_tracks.user_id = users.user_id
 WHERE popular_tracks.total_listening_time > 800;
+
+SELECT tracks.tracks_id, artists.name, avg_completion_pct.average_completion_pct
+FROM (
+        SELECT listening_events.track_id,
+        AVG(listening_events.completion_pct) AS average_completion_pct
+        FROM listening_events
+        GROUP BY listening_events.user_id
+) AS avg_completion_pct
+JOIN tracks ON avg_completion_pct.track_id = tracks.track_id
+JOIN artists ON tracks.artist_id = artists.artist_id;
+
+
+WITH unique_listener AS 
+    (SELECT tracks.track_id, tracks.play_count
+    GROUP BY tracks.track_id)
+SELECT unique_listeners.play_count, tracks.title, artists.name
+JOIN tracks.title ON artists.artist_id = tracks.artist_id
+
+WITH unique_listener AS (
+        SELECT listening_events.track_id,
+        COUNT(DISTINCT listening_events.user_id) AS unique_listener_count
+        FROM listening_events
+        GROUP BY listening_events.track_id
+)
+SELECT
+   tracks.title,
+   artists.name AS artist_name,
+   unique_listeners.unique_listener_count
+   FROM unique_listeners
+JOIN tracks
+  ON unique_listener.track_id = tracks.track_id
+ORDER BY unique_listeners.unique_listener_count DESC,
+tracks.track_id LIMIT 5;
+
+
 
 
 
