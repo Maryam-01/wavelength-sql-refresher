@@ -32,16 +32,51 @@ WHERE tracks.play_count > (
         FROM tracks
 );
 
+SELECT tracks.title,
+artists.name,
+tracks.play_count
+FROM tracks
+JOIN artists ON artists.artist_id = tracks.artists_id
+WHERE (
+        SELECT tracks.play_count,
+        FROM tracks
+        AVG(play_count) AS average_play_count
+        WHERE tracks.play_count > average_play_count
+
+)
+
+SELECT tracks.title,
+artists.name,
+tracks.play_count
+FROM tracks
+JOIN artists ON artists.artist_id = tracks.artists_id
+WHERE tracks.play_count > (
+        SELECT AVG(play_count)
+        FROM tracks
+);
 
 SELECT tracks.title,
 artists.name
 FROM tracks
-JOIN artists ON tracks.track_id = artists.artist_id
+JOIN tracks ON artists.artist_id = tracks.artist_id
+WHERE NOT EXISTS (
+        SELECT 
+        listening_events.track_id
+        FROM listening_events
+
+
+)
+
+
+SELECT tracks.title,
+artists.name
+FROM tracks
+JOIN artists ON tracks.artist_id = artists.artist_id
 WHERE NOT EXISTS (
         SELECT listening_events.track_id
         FROM listening_events
         WHERE listening_events.track_id = tracks.track_id
-)
+);
 
 
 
@@ -156,7 +191,7 @@ WITH genre_summary AS (
         GROUP BY genre_name
 ),
  average_play_count AS (
-        genre_name,
+        SELECT genre_name,
         1.0 * total_play_count / NULLIF(track_count, 0)
         AS average_play_count_per_track
         FROM genre_summary
@@ -171,6 +206,31 @@ FROM genre_summary
 JOIN average_play_count 
 ON genre_summary.genre_name = average_play_count.genre_name;
 
+WITH genre_summary AS (
+    SELECT
+        artists.genre AS genre_name,
+        COUNT(tracks.track_id) AS track_count,
+        SUM(tracks.play_count) AS total_play_count,
+        AVG(1.0 * tracks.play_count) AS average_play_count_per_track
+    FROM artists
+    JOIN tracks
+        ON artists.artist_id = tracks.artist_id
+    GROUP BY artists.genre
+),
+average_play_count AS (
+    SELECT
+        genre_name,
+        track_count,
+        total_play_count,
+        average_play_count_per_track
+    FROM genre_summary
+)
+SELECT
+    genre_name,
+    track_count,
+    total_play_count,
+    average_play_count_per_track
+FROM average_play_count;
 
 
 
