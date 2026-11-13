@@ -128,7 +128,19 @@ JOIN artists ON tracks.artist_id = artists.artist_id;
 ORDER BY unique_users.unique_user DESC, tracks.track_id
 LIMIT 5;
 
-
+WITH no_of_tracks AS ( 
+        SELECT tracks.track_id,
+        tracks.play_count,
+        artists.genre
+        COUNT(tracks.track_id) AS track_count
+        SUM(tracks.play_count) AS total_play_count
+        FROM tracks
+        JOIN tracks ON artists.artist_id = tracks.artist_id
+        GROUP BY artists.genre
+),
+average_play_count AS (
+        SELECT 
+)
 
 
 
@@ -360,6 +372,19 @@ SELECT listening_events.listened_at,
         COUNT(*) OVER (ORDER BY listening_events.listened_at ASC) AS running_total
 FROM listening_events 
 ORDER BY listening_events.listened_at;
+
+SELECT
+    le.user_id,
+    ROW_NUMBER() OVER (
+        PARTITION BY le.user_id
+        ORDER BY le.listened_at ASC
+    ) AS row_num,
+    t.title AS track_title,
+    le.listened_at
+FROM listening_events AS le
+JOIN tracks AS t
+    ON le.track_id = t.track_id
+ORDER BY le.user_id, row_num;
 
 
     
